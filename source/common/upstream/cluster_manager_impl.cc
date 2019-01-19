@@ -1149,13 +1149,11 @@ ClusterManagerImpl::ThreadLocalClusterManagerImpl::ClusterEntry::tcpConnPool(
 }
 
 ClusterManagerPtr ProdClusterManagerFactory::clusterManagerFromProto(
-    const envoy::config::bootstrap::v2::Bootstrap& bootstrap, Stats::Store& stats,
-    ThreadLocal::Instance& tls, Runtime::Loader& runtime, Runtime::RandomGenerator& random,
-    const LocalInfo::LocalInfo& local_info, AccessLog::AccessLogManager& log_manager,
-    Server::Admin& admin) {
-  return ClusterManagerPtr{new ClusterManagerImpl(bootstrap, *this, stats, tls, runtime, random,
-                                                  local_info, log_manager, main_thread_dispatcher_,
-                                                  admin, api_, http_context_)};
+    const envoy::config::bootstrap::v2::Bootstrap& bootstrap,
+    AccessLog::AccessLogManager& log_manager) {
+  return ClusterManagerPtr{new ClusterManagerImpl(bootstrap, *this, stats_, tls_, runtime_, random_,
+                                                  local_info_, log_manager, main_thread_dispatcher_,
+                                                  admin_, api_, http_context_)};
 }
 
 Http::ConnectionPool::InstancePtr ProdClusterManagerFactory::allocateConnPool(
@@ -1185,7 +1183,7 @@ ClusterSharedPtr ProdClusterManagerFactory::clusterFromProto(
     bool added_via_api) {
   return ClusterImplBase::create(cluster, cm, stats_, tls_, dns_resolver_, ssl_context_manager_,
                                  runtime_, random_, main_thread_dispatcher_, log_manager,
-                                 local_info_, outlier_event_logger, added_via_api);
+                                 local_info_, admin_, outlier_event_logger, added_via_api);
 }
 
 CdsApiPtr ProdClusterManagerFactory::createCds(const envoy::api::v2::core::ConfigSource& cds_config,

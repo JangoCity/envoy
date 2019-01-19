@@ -63,7 +63,7 @@ public:
                                   bool added_via_api) -> ClusterSharedPtr {
           return ClusterImplBase::create(
               cluster, cm, stats_, tls_, dns_resolver_, ssl_context_manager_, runtime_, random_,
-              dispatcher_, log_manager, local_info_, outlier_event_logger, added_via_api);
+              dispatcher_, log_manager, local_info_, admin_, outlier_event_logger, added_via_api);
         }));
   }
 
@@ -93,21 +93,15 @@ public:
 
   ClusterManagerPtr
   clusterManagerFromProto(const envoy::config::bootstrap::v2::Bootstrap& bootstrap,
-                          Stats::Store& stats, ThreadLocal::Instance& tls, Runtime::Loader& runtime,
-                          Runtime::RandomGenerator& random, const LocalInfo::LocalInfo& local_info,
-                          AccessLog::AccessLogManager& log_manager, Server::Admin& admin) override {
-    return ClusterManagerPtr{clusterManagerFromProto_(bootstrap, stats, tls, runtime, random,
-                                                      local_info, log_manager, admin)};
+                          AccessLog::AccessLogManager& log_manager) override {
+    return ClusterManagerPtr{clusterManagerFromProto_(bootstrap, log_manager)};
   }
 
   Secret::SecretManager& secretManager() override { return secret_manager_; }
 
-  MOCK_METHOD8(clusterManagerFromProto_,
+  MOCK_METHOD2(clusterManagerFromProto_,
                ClusterManager*(const envoy::config::bootstrap::v2::Bootstrap& bootstrap,
-                               Stats::Store& stats, ThreadLocal::Instance& tls,
-                               Runtime::Loader& runtime, Runtime::RandomGenerator& random,
-                               const LocalInfo::LocalInfo& local_info,
-                               AccessLog::AccessLogManager& log_manager, Server::Admin& admin));
+                               AccessLog::AccessLogManager& log_manager));
   MOCK_METHOD1(allocateConnPool_, Http::ConnectionPool::Instance*(HostConstSharedPtr host));
   MOCK_METHOD1(allocateTcpConnPool_, Tcp::ConnectionPool::Instance*(HostConstSharedPtr host));
   MOCK_METHOD5(clusterFromProto_,
@@ -126,6 +120,7 @@ public:
   Extensions::TransportSockets::Tls::ContextManagerImpl ssl_context_manager_{
       dispatcher_.timeSystem()};
   NiceMock<LocalInfo::MockLocalInfo> local_info_;
+  NiceMock<Server::MockAdmin> admin_;
   NiceMock<Secret::MockSecretManager> secret_manager_;
 };
 
